@@ -1,3 +1,200 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "include/Vehiculo.h"
+#include "include/Camion.h"
+#include "include/Automovil.h"
+
+/**
+ * @brief Funcion auxiliar para buscar un vehiculo en la flota mediante su placa.
+ * @return Puntero al vehiculo encontrado o nullptr si no existe.
+ */
+Vehiculo* buscarVehiculo(const std::vector<Vehiculo*>& inventario, const std::string& placa) {
+    for (auto v : inventario) {
+        if (v->getPlaca() == placa) {
+            return v;
+        }
+    }
+    return nullptr;
+}
+
+int main() {
+    std::vector<Vehiculo*> flota;
+    int opcion = 0;
+
+    do {
+        std::cout << "\n==================================================\n";
+        std::cout << "   SISTEMA DE GESTION DE VEHICULOS EN UNA EMPRESA \n";
+        std::cout << "==================================================\n";
+        std::cout << "1. Registrar Camion\n";
+        std::cout << "2. Registrar Automovil\n";
+        std::cout << "3. Mostrar vehiculos registrados\n";
+        std::cout << "4. Mostrar capacidad total\n";
+        std::cout << "5. MonstarCantidadCargadaOPasajeros\n";
+        std::cout << "6. Cargar camion (Buscar por Placa)\n";
+        std::cout << "7. Descargar camion (Buscar por Placa)\n";
+        std::cout << "8. Subir pasajeros (Buscar por Placa)\n";
+        std::cout << "9. Bajar pasajeros (Buscar por Placa)\n";
+        std::cout << "10. Salir\n";
+        std::cout << "--------------------------------------------------\n";
+        std::cout << "Seleccione una opcion: ";
+        std::cin >> opcion;
+
+        switch (opcion) {
+            case 1: {
+                std::string placa, marca;
+                int modelo;
+                double capCarga;
+                std::cout << "\n[Registro de Camion]\n";
+                std::cout << "Ingrese Placa: "; std::cin >> placa;
+                std::cout << "Ingrese Marca: "; std::cin >> marca;
+                std::cout << "Ingrese Modelo (Anio): "; std::cin >> modelo;
+                std::cout << "Ingrese Capacidad Maxima de Carga (kg): "; std::cin >> capCarga;
+
+                if (capCarga <= 0 || modelo <= 0) {
+                    std::cout << "[Error] La capacidad y el modelo deben ser mayores a cero.\n";
+                } else {
+                    flota.push_back(new Camion(placa, marca, modelo, capCarga));
+                    std::cout << "[OK] Camion registrado exitosamente.\n";
+                }
+                break;
+            }
+            case 2: {
+                std::string placa, marca;
+                int modelo, capPasajeros;
+                std::cout << "\n[Registro de Automovil]\n";
+                std::cout << "Ingrese Placa: "; std::cin >> placa;
+                std::cout << "Ingrese Marca: "; std::cin >> marca;
+                std::cout << "Ingrese Modelo (Anio): "; std::cin >> modelo;
+                std::cout << "Ingrese Capacidad Maxima de Pasajeros: "; std::cin >> capPasajeros;
+
+                if (capPasajeros <= 0 || modelo <= 0) {
+                    std::cout << "[Error] La capacidad y el modelo deben ser mayores a cero.\n";
+                } else {
+                    flota.push_back(new Automovil(placa, marca, modelo, capPasajeros));
+                    std::cout << "[OK] Automovil registrado exitosamente.\n";
+                }
+                break;
+            }
+            case 3:
+                if (flota.empty()) {
+                    std::cout << "\n[Aviso] No hay vehiculos registrados en el sistema.\n";
+                } else {
+                    std::cout << "\n--- VEHICULOS REGISTRADOS ---\n";
+                    for (const auto v : flota) {
+                        v->MostrarInformacion(); // Enlace dinamico (Polimorfismo)
+                    }
+                }
+                break;
+
+            case 4: {
+                double capacidadTotal = 0;
+                for (const auto v : flota) {
+                    capacidadTotal += v->CalcularCapacidad();
+                }
+                std::cout << "\nLa capacidad total de toda la flota (Carga + Pasajeros) es: " << capacidadTotal << "\n";
+                break;
+            }
+            case 5:
+                if (flota.empty()) {
+                    std::cout << "\n[Aviso] No hay vehiculos registrados para reportar ocupacion.\n";
+                } else {
+                    std::cout << "\n--- CANTIDAD CARGADA O PASAJEROS ACTUALES ---\n";
+                    for (const auto v : flota) {
+                        v->MonstarCantidadCargadaOPasajeros();
+                    }
+                }
+                break;
+
+            case 6: {
+                std::string placa;
+                double peso;
+                std::cout << "\n>>> CARGAR CAMION <<<\n";
+                std::cout << "Ingrese la placa del camion: "; std::cin >> placa;
+                
+                Vehiculo* v = buscarVehiculo(flota, placa);
+                Camion* c = dynamic_cast<Camion*>(v);
+                
+                if (c) {
+                    std::cout << "Ingrese cantidad de kg a cargar: "; std::cin >> peso;
+                    c->Cargar(peso);
+                } else if (v != nullptr) {
+                    std::cout << "[Error] El vehiculo con placa '" << placa << "' es un Automovil, no un camion.\n";
+                } else {
+                    std::cout << "[Error] No se encontro ningun vehiculo registrado con la placa: " << placa << "\n";
+                }
+                break;
+            }
+            case 7: {
+                std::string placa;
+                double peso;
+                std::cout << "\n>>> DESCARGAR CAMION <<<\n";
+                std::cout << "Ingrese la placa del camion: "; std::cin >> placa;
+                
+                Vehiculo* v = buscarVehiculo(flota, placa);
+                Camion* c = dynamic_cast<Camion*>(v);
+                
+                if (c) {
+                    std::cout << "Ingrese cantidad de kg a descargar: "; std::cin >> peso;
+                    c->Descargar(peso);
+                } else if (v != nullptr) {
+                    std::cout << "[Error] El vehiculo con placa '" << placa << "' es un Automovil, no un camion.\n";
+                } else {
+                    std::cout << "[Error] No se encontro ningun vehiculo registrado con la placa: " << placa << "\n";
+                }
+                break;
+            }
+            case 8: {
+                std::string placa;
+                int pasajeros;
+                std::cout << "\n>>> SUBIR PASAJEROS A AUTOMOVIL <<<\n";
+                std::cout << "Ingrese la placa del automovil: "; std::cin >> placa;
+                
+                Vehiculo* v = buscarVehiculo(flota, placa);
+                Automovil* a = dynamic_cast<Automovil*>(v);
+                
+                if (a) {
+                    std::cout << "Ingrese cantidad de pasajeros a subir: "; std::cin >> pasajeros;
+                    a->subirPasajeros(pasajeros);
+                } else if (v != nullptr) {
+                    std::cout << "[Error] El vehiculo con placa '" << placa << "' es un Camion, no un automovil.\n";
+                } else {
+                    std::cout << "[Error] No se encontro ningun vehiculo registrado con la placa: " << placa << "\n";
+                }
+                break;
+            }
+            case 9: {
+                std::string placa;
+                int pasajeros;
+                std::cout << "\n>>> BAJAR PASAJEROS DE AUTOMOVIL <<<\n";
+                std::cout << "Ingrese la placa del automovil: "; std::cin >> placa;
+                
+                Vehiculo* v = buscarVehiculo(flota, placa);
+                Automovil* a = dynamic_cast<Automovil*>(v);
+                
+                if (a) {
+                    std::cout << "Ingrese cantidad de pasajeros a bajar: "; std::cin >> pasajeros;
+                    a->BajarPasajeros(pasajeros);
+                } else if (v != nullptr) {
+                    std::cout << "[Error] El vehiculo con placa '" << placa << "' es un Camion, no un automovil.\n";
+                } else {
+                    std::cout << "[Error] No se encontro ningun vehiculo registrado con la placa: " << placa << "\n";
+                }
+                break;
+            }
+            case 10:
+                std::cout << "\nSaliendo de la aplicacion de Gestion de Vehiculos...\n";
+                break;
+            default:
+                std::cout << "\n[Error] Opcion invalida. Intente de nuevo.\n";
+        }
+    } while (opcion != 10);
+
+    // Liberacion explicita de la memoria dinamica generada con 'new'
+    for (auto v : flota) {
+        delete v;
+    }
+    flota.clear();
+
+    return 0;
+}
